@@ -259,98 +259,98 @@ int find(char* str1) {
 
 int flag = 0;
 int indexDB = 0;
+
 void callFunction(int returnValue, char buffer[]) {
     char temp[500] = "";
-    strcpy(temp , buffer);
-    strcpy(buffer , "\n200	Command okay\n");
-    if(returnValue == 1) {
-        if( flag == 1 || flag == 2) {
-            strcpy(buffer , "\n503 	Bad sequence of commands.\n");
+    strcpy(temp, buffer);
+    strcpy(buffer, "\n200\tCommand okay\n");
+
+    if (returnValue == 1) {
+        if (flag == 1 || flag == 2) {
+            strcpy(buffer, "\n503\tBad sequence of commands.\n");
             return;
         }
-        if( temp[4] != ' ') {
-            strcpy(buffer , "\n503 	Bad sequence of commands.\n");
+        if (temp[4] != ' ') {
+            strcpy(buffer, "\n503\tBad sequence of commands.\n");
             return;
         }
+
         char userID[10];
-        strncpy(userID , temp + 5 , 9);
+        strncpy(userID, temp + 5, 9);
+        userID[9] = '\0';
+
         static const char filename[] = "idPass.txt";
-        FILE *file = fopen ( filename, "r" );
-        char line [ 100 ]; /* or other suitable maximum line size */
+        FILE *file = fopen(filename, "r");
+        if (!file) {
+            strcpy(buffer, "\nError opening file.\n");
+            return;
+        }
+
+        char line[100];
         char id[10];
-        while ( fgets ( line, sizeof line, file ) != NULL ) {
-            strncpy(id , line , 9);
+        indexDB = 0;
+        flag = 0;
+
+        while (fgets(line, sizeof(line), file) != NULL) {
+            strncpy(id, line, 9);
             id[9] = '\0';
             indexDB++;
-            if ( strcmp( id , userID ) == 0 ) {
+            if (strcmp(id, userID) == 0) {
                 flag = 1;
                 break;
             }
         }
-        fclose ( file );
-        if ( flag == 1) {
-            strcat(buffer , "\n331 	User name okay, need password.\n");
-        }
-        else {
-            strcpy(buffer , "\nUserID not Found In DATABASE\n");
+        fclose(file);
+
+        if (flag == 1) {
+            strcat(buffer, "\n331\tUser name okay, need password.\n");
+        } else {
+            strcpy(buffer, "\nUserID not Found In DATABASE\n");
             indexDB = 0;
+        }
+    } else if (returnValue == 2) {
+        if (flag == 2 || flag == 0) {
+            strcpy(buffer, "\n503\tBad sequence of commands.\n");
             return;
         }
-        /*for(int i = 5; i < 11; i++ ) {
-            if( (temp[i] - '0') != i - 4 ) {
-                strcpy(buffer , "\nIncorrect UserId\n");
-                return;
-            }
-        */
-        /*
-        strcat(buffer , "\n331 	User name okay, need password.\n");
-        flag = 1;
-        */
-    }
-    else if ( returnValue == 2) {
-        if( flag == 2 || flag == 0) {
-            strcpy(buffer , "\n503 	Bad sequence of commands.\n");
+        if (temp[4] != ' ') {
+            strcpy(buffer, "\n503\tBad sequence of commands.\n");
             return;
         }
-        if( temp[4] != ' ') {
-            strcpy(buffer , "\n503 	Bad sequence of commands.\n");
-            return;
-        }
-        /*
-        for(int i = 5; i < 11; i++ ) {
-            if( (temp[i] - '0') != i - 4 ) {
-                strcat(buffer , "\nIncorrect Password\n");
-                return;
-            }
-        }
-        strcat(buffer , "\nSuccessfully Logged In.\n");
-        flag = 2;
-        */
+
         char userPass[9];
-        strncpy(userPass , temp + 5 , 8);
+        strncpy(userPass, temp + 5, 8);
+        userPass[8] = '\0';
+
         static const char filename[] = "idPass.txt";
-        FILE *file = fopen ( filename, "r" );
-        char line [ 100 ]; /* or other suitable maximum line size */
+        FILE *file = fopen(filename, "r");
+        if (!file) {
+            strcpy(buffer, "\nError opening file.\n");
+            return;
+        }
+
+        char line[100];
         char pass[9];
         int count = 1;
-        while ( fgets ( line, sizeof line, file ) != NULL ) {
-            if( count == indexDB ) {
-                strncpy(pass , line + 10 , 8);
+        flag = 0;
+
+        while (fgets(line, sizeof(line), file) != NULL) {
+            if (count == indexDB) {
+                strncpy(pass, line + 10, 8);
                 pass[8] = '\0';
-                if ( strcmp( pass , userPass ) == 0 ) {
+                if (strcmp(pass, userPass) == 0) {
                     flag = 2;
                 }
                 break;
             }
-            count += 1;
+            count++;
         }
-        fclose ( file );
-        if ( flag == 2) {
-            strcat(buffer , "\nSuccessfully Logged In.\n");
-            return;
-        }
-        else {
-            strcpy(buffer , "\nIncorrect Password\n");
+        fclose(file);
+
+        if (flag == 2) {
+            strcat(buffer, "\nSuccessfully Logged In.\n");
+        } else {
+            strcpy(buffer, "\nIncorrect Password\n");
             return;
         }
     }
